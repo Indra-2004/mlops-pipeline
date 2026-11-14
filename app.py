@@ -268,3 +268,83 @@ elif page == "Data drift monitor":
             st.plotly_chart(fig2, use_container_width=True)
 
 
+# ---------------------------------------------------------------------------
+# Page: Model comparison
+# ---------------------------------------------------------------------------
+elif page == "Model comparison":
+    st.title("Model comparison")
+    st.markdown("Champion vs challenger analysis.")
+
+    versions = load_registry()
+    if len(versions) < 2:
+        st.info("Need at least two model versions for comparison. Run the pipeline multiple times.")
+        if len(versions) == 1:
+            st.write("Current model metrics:")
+            st.json(versions[0].get("metrics", {}))
+    else:
+        version_names = [v["version"] for v in versions]
+        col1, col2 = st.columns(2)
+        champion_v = col1.selectbox("Champion (A)", version_names, index=len(version_names) - 2)
+        challenger_v = col2.selectbox("Challenger (B)", version_names, index=len(version_names) - 1)
+
+        champ_meta = next(v for v in versions if v["version"] == champion_v)
+        chall_meta = next(v for v in versions if v["version"] == challenger_v)
+
+        comparison = compare_models(
+            champ_meta.get("metrics", {}),
+            chall_meta.get("metrics", {}),
+        )
+
+        # Result banner
+        if comparison["promote_challenger"]:
+            st.success(
+                f"Challenger wins by {comparison['difference']:+.4f} on {comparison['primary_metric']}. "
+                "Promotion recommended."
+            )
+        else:
+            st.warning(
+                f"Champion holds. Difference: {comparison['difference']:+.4f} "
+                f"(threshold: {comparison['threshold']})."
+            )
+
+        # Side-by-side metrics
+        st.subheader("Metrics comparison")
+        metric_names = list(champ_meta.get("metrics", {}).keys())
+        comp_rows = []
+        for m in metric_names:
+            va = champ_meta["metrics"].get(m, 0)
+            vb = chall_meta["metrics"].get(m, 0)
+            comp_rows.append({
+                "Metric": m,
+                "Champion": f"{va:.4f}",
+                "Challenger": f"{vb:.4f}",
+                "Diff": f"{vb - va:+.4f}",
+            })
+        st.dataframe(pd.DataFrame(comp_rows), use_container_width=True, hide_index=True)
+
+        # Radar chart
+        if metric_names:
+            fig = go.Figure()
+            fig.add_trace(go.Scatterpolar(
+                r=[champ_meta["metrics"].get(m, 0) for m in metric_names],
+                theta=metric_names,
+                fill="toself",
+                name=f"Champion ({champion_v})",
+                line_color="#3B6FD4",
+            ))
+            fig.add_trace(go.Scatterpolar(
+                r=[chall_meta["metrics"].get(m, 0) for m in metric_names],
+                theta=metric_names,
+                fill="toself",
+                name=f"Challenger ({challenger_v})",
+                line_color="#E8C230",
+            ))
+            fig.update_layout(
+                polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+                template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)",
+                title="Metric comparison (radar)",
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+
