@@ -102,3 +102,46 @@ def validate_nulls(df: pd.DataFrame) -> ValidationResult:
     return result
 
 
+def validate_distributions(
+    df: pd.DataFrame,
+    reference: Optional[pd.DataFrame] = None,
+) -> ValidationResult:
+    """Basic range and distribution checks.
+
+    If *reference* is provided, checks whether numeric column means have drifted
+    more than 2 standard deviations from the reference mean.
+    """
+    result = ValidationResult()
+
+    # Range checks for known columns
+    if "tenure" in df.columns:
+        ok = df["tenure"].min() >= 0
+        result.add("tenure_nonneg", ok, f"min={df['tenure'].min()}")
+    if "MonthlyCharges" in df.columns:
+        ok = df["MonthlyCharges"].min() >= 0
+        result.add("charges_nonneg", ok, f"min={df['MonthlyCharges'].min():.2f}")
+    if "Churn" in df.columns:
+        unique = set(df["Churn"].unique())
+        ok = unique.issubset({0, 1})
+        result.add("churn_binary", ok, f"unique={unique}")
+
+    # Drift vs reference
+    if reference is not None:
+        numeric_cols = df.select_dtypes(include="number").columns
+        for col in numeric_cols:
+            if col in reference.columns:
+                ref_mean = reference[col].mean()
+                ref_std = reference[col].std()
+                cur_mean = df[col].mean()
+                if ref_std > 0:
+                    z = abs(cur_mean - ref_mean) / ref_std
+                    ok = z < 2.0
+                    result.add(
+                        f"drift_{col}",
+                        ok,
+                        f"z={z:.2f} (ref_mean={ref_mean:.2f}, cur_mean={cur_mean:.2f})",
+                    )
+
+    return result
+
+
