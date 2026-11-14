@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Generated data and pipeline outputs
+data/*.csv
+artifacts/
+metrics/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
