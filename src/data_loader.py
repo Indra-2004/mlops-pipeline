@@ -190,3 +190,128 @@ def load_drift_data(data_dir: str) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
+# ---------------------------------------------------------------------------
+# Synthetic data generation
+# ---------------------------------------------------------------------------
+def generate_synthetic_churn_data(
+    n_samples: int = 5000,
+    churn_rate: float = 0.26,
+    seed: int = 42,
+    drift: bool = False,
+) -> pd.DataFrame:
+    """Generate synthetic telecom churn data.
+
+    Parameters
+    ----------
+    n_samples : int
+        Number of rows to generate.
+    churn_rate : float
+        Approximate target churn rate.
+    seed : int
+        Random seed for reproducibility.
+    drift : bool
+        If True, shift feature distributions to simulate data drift.
+    """
+    rng = np.random.RandomState(seed)
+
+    gender = rng.choice(["Male", "Female"], n_samples)
+    senior = rng.binomial(1, 0.16, n_samples)
+    partner = rng.choice(["Yes", "No"], n_samples, p=[0.48, 0.52])
+    dependents = rng.choice(["Yes", "No"], n_samples, p=[0.30, 0.70])
+
+    tenure = rng.exponential(scale=32, size=n_samples).astype(int).clip(0, 72)
+    if drift:
+        tenure = (tenure * 0.5).astype(int).clip(0, 72)  # shift toward lower tenure
+
+    phone = rng.choice(["Yes", "No"], n_samples, p=[0.90, 0.10])
+    multi_lines = rng.choice(
+        ["Yes", "No", "No phone service"], n_samples, p=[0.42, 0.48, 0.10]
+    )
+
+    internet = rng.choice(
+        ["DSL", "Fiber optic", "No"], n_samples, p=[0.34, 0.44, 0.22]
+    )
+    if drift:
+        internet = rng.choice(
+            ["DSL", "Fiber optic", "No"], n_samples, p=[0.20, 0.60, 0.20]
+        )
+
+    no_internet = internet == "No"
+    _yes_no_noint = lambda p: np.where(  # noqa: E731
+        no_internet,
+        "No internet service",
+        rng.choice(["Yes", "No"], n_samples, p=[p, 1 - p]),
+    )
+
+    online_sec = _yes_no_noint(0.29)
+    online_bak = _yes_no_noint(0.34)
+    dev_protect = _yes_no_noint(0.34)
+    tech_sup = _yes_no_noint(0.29)
+    stream_tv = _yes_no_noint(0.38)
+    stream_mov = _yes_no_noint(0.39)
+
+    contract = rng.choice(
+        ["Month-to-month", "One year", "Two year"],
+        n_samples,
+        p=[0.55, 0.21, 0.24],
+    )
+    if drift:
+        contract = rng.choice(
+            ["Month-to-month", "One year", "Two year"],
+            n_samples,
+            p=[0.72, 0.15, 0.13],
+        )
+
+    paperless = rng.choice(["Yes", "No"], n_samples, p=[0.59, 0.41])
+    payment = rng.choice(
+        [
+            "Electronic check",
+            "Mailed check",
+            "Bank transfer (automatic)",
+            "Credit card (automatic)",
+        ],
+        n_samples,
+        p=[0.34, 0.23, 0.22, 0.21],
+    )
+
+    monthly = rng.normal(64.8, 30.0, n_samples).clip(18.0, 118.0)
+    if drift:
+        monthly = rng.normal(78.0, 25.0, n_samples).clip(18.0, 118.0)
+
+    total = monthly * tenure + rng.normal(0, 50, n_samples)
+    total = total.clip(0, None)
+
+    # Churn label (correlated with tenure, contract, monthly charges)
+    churn_prob = 0.15 + 0.25 * (tenure < 12) + 0.15 * (contract == "Month-to-month")
+    churn_prob = churn_prob + 0.10 * (monthly > 80)
+    churn_prob = np.clip(churn_prob, 0.05, 0.95)
+    # Adjust overall rate
+    churn_prob = churn_prob * (churn_rate / churn_prob.mean())
+    churn_prob = np.clip(churn_prob, 0.01, 0.99)
+    churn = rng.binomial(1, churn_prob)
+
+    df = pd.DataFrame(
+        {
+            "gender": gender,
+            "SeniorCitizen": senior,
+            "Partner": partner,
+            "Dependents": dependents,
+            "tenure": tenure,
+            "PhoneService": phone,
+            "MultipleLines": multi_lines,
+            "InternetService": internet,
+            "OnlineSecurity": online_sec,
+            "OnlineBackup": online_bak,
+            "DeviceProtection": dev_protect,
+            "TechSupport": tech_sup,
+            "StreamingTV": stream_tv,
+            "StreamingMovies": stream_mov,
+            "Contract": contract,
+            "PaperlessBilling": paperless,
+            "PaymentMethod": payment,
+            "MonthlyCharges": np.round(monthly, 2),
+            "TotalCharges": np.round(total, 2),
+            "Churn": churn,
+        }
+    )
+    return df
