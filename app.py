@@ -93,3 +93,58 @@ page = st.sidebar.radio(
     ],
 )
 
+# ---------------------------------------------------------------------------
+# Page: Pipeline status
+# ---------------------------------------------------------------------------
+if page == "Pipeline status":
+    st.title("Pipeline status")
+    st.markdown("Current state of the last training pipeline run.")
+
+    latest = load_latest_run()
+    if latest is None:
+        st.info("No pipeline runs found. Use the **Retrain** page to trigger a run.")
+    else:
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Status", latest.get("status", "UNKNOWN"))
+        col2.metric("Model version", latest.get("model_version", "—"))
+        col3.metric("Finished at", latest.get("finished_at", "—")[:19])
+
+        # Step-by-step breakdown
+        st.subheader("Pipeline steps")
+        steps = latest.get("steps", [])
+        if steps:
+            step_df = pd.DataFrame(steps)
+            st.dataframe(step_df, use_container_width=True, hide_index=True)
+
+            # Duration chart
+            fig = px.bar(
+                step_df,
+                x="step",
+                y="duration_s",
+                color="status",
+                color_discrete_map={"PASSED": "#22c55e", "WARNING": "#f59e0b", "FAILED": "#ef4444"},
+                title="Step duration (seconds)",
+            )
+            fig.update_layout(
+                template="plotly_dark",
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+        # Holdout metrics
+        holdout = latest.get("holdout_metrics")
+        if holdout:
+            st.subheader("Holdout metrics")
+            mcols = st.columns(len(holdout))
+            for i, (k, v) in enumerate(holdout.items()):
+                mcols[i].metric(k.upper(), f"{v:.4f}")
+
+        # Validation summary
+        validations = latest.get("validation", [])
+        if validations:
+            with st.expander("Data validation details"):
+                val_df = pd.DataFrame(validations)
+                st.dataframe(val_df, use_container_width=True, hide_index=True)
+
+
