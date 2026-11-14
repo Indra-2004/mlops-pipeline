@@ -182,3 +182,11 @@ def load_training_data(data_dir: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
     return train_df, test_df
 
 
+def load_drift_data(data_dir: str) -> pd.DataFrame:
+    """Load the drift dataset used for monitoring tests."""
+    path = os.path.join(data_dir, "drift.csv")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Drift data not found at {path}")
+    return pd.read_csv(path)
+
+
