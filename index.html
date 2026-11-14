@@ -513,3 +513,109 @@ footer a:hover { color: var(--gold); }
   </div>
 </section>
 
+<!-- Dashboard preview -->
+<section class="fade-up">
+  <h2>Interactive dashboard</h2>
+  <p class="section-sub">Five-page Streamlit application for pipeline monitoring and control</p>
+  <div class="app-grid">
+
+    <div class="app-card">
+      <div class="app-card-name">Pipeline status</div>
+      <ul>
+        <li>Step-by-step run breakdown with durations</li>
+        <li>Holdout metrics at a glance</li>
+        <li>Data validation results</li>
+      </ul>
+      <div class="mock-pipeline">
+        <div class="mock-step" style="background:var(--navy);"></div>
+        <div class="mock-step" style="background:var(--navy);"></div>
+        <div class="mock-step" style="background:var(--navy);"></div>
+        <div class="mock-step" style="background:var(--gold);"></div>
+        <div class="mock-step" style="background:var(--gold);"></div>
+        <div class="mock-step" style="background:var(--text-dim);opacity:0.3;"></div>
+      </div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-name">Model registry</div>
+      <ul>
+        <li>All versions with timestamps and metrics</li>
+        <li>Production flag indicator</li>
+        <li>Metrics trend over time</li>
+      </ul>
+      <div class="mock-bars">
+        <div class="mock-bar mock-bar--navy" style="height:72%"></div>
+        <div class="mock-bar mock-bar--navy" style="height:76%"></div>
+        <div class="mock-bar mock-bar--navy" style="height:74%"></div>
+        <div class="mock-bar mock-bar--gold" style="height:82%"></div>
+        <div class="mock-bar mock-bar--gold" style="height:85%"></div>
+      </div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-name">Drift monitor</div>
+      <ul>
+        <li>PSI per feature with threshold lines</li>
+        <li>Distribution overlays (train vs incoming)</li>
+        <li>Retrain trigger indicators</li>
+      </ul>
+      <div class="mock-drift">
+        <div class="mock-drift-bar" style="height:20%;background:var(--navy);"></div>
+        <div class="mock-drift-bar" style="height:35%;background:var(--navy);"></div>
+        <div class="mock-drift-bar" style="height:65%;background:var(--gold);"></div>
+        <div class="mock-drift-bar" style="height:80%;background:#ef4444;"></div>
+        <div class="mock-drift-bar" style="height:15%;background:var(--navy);"></div>
+        <div class="mock-drift-bar" style="height:45%;background:var(--gold);"></div>
+        <div class="mock-drift-bar" style="height:25%;background:var(--navy);"></div>
+      </div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-name">Model comparison</div>
+      <ul>
+        <li>Champion vs challenger radar chart</li>
+        <li>Side-by-side metric tables</li>
+        <li>Promotion recommendation</li>
+      </ul>
+      <div class="mock-bars">
+        <div class="mock-bar mock-bar--navy" style="height:75%"></div>
+        <div class="mock-bar mock-bar--gold" style="height:80%"></div>
+        <div class="mock-bar" style="height:1px;background:var(--text-dim);opacity:0.3"></div>
+        <div class="mock-bar mock-bar--navy" style="height:68%"></div>
+        <div class="mock-bar mock-bar--gold" style="height:72%"></div>
+        <div class="mock-bar" style="height:1px;background:var(--text-dim);opacity:0.3"></div>
+        <div class="mock-bar mock-bar--navy" style="height:82%"></div>
+        <div class="mock-bar mock-bar--gold" style="height:85%"></div>
+      </div>
+    </div>
+
+    <div class="app-card" style="grid-column: 1 / -1;">
+      <div class="app-card-name">Retrain</div>
+      <ul>
+        <li>One-click data regeneration and pipeline trigger</li>
+        <li>Full run history with AUC, F1, and drift flags</li>
+        <li>Automated promotion decisions logged for audit</li>
+      </ul>
+      <div class="mock-pipeline">
+        <div class="mock-step" style="background:var(--navy);"></div>
+        <div class="mock-step" style="background:var(--navy);"></div>
+        <div class="mock-step" style="background:var(--navy);"></div>
+        <div class="mock-step" style="background:var(--navy);"></div>
+        <div class="mock-step" style="background:var(--navy);"></div>
+        <div class="mock-step" style="background:var(--gold);"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="btn-row">
+    <a href="#" class="btn btn--gold">Launch live app</a>
+    <a href="https://github.com/guydev42/mlops-pipeline" class="btn btn--outline" target="_blank" rel="noopener">View source</a>
+  </div>
+
+  <div class="code-block"><span class="prompt">$</span> pip install -r requirements.txt
+<span class="prompt">$</span> python data/generate_data.py
+<span class="prompt">$</span> python -m src.pipeline
+<span class="prompt">$</span> streamlit run app.py</div>
+</section>
+
