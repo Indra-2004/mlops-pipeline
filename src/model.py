@@ -48,3 +48,46 @@ CATEGORICAL_FEATURES = [
 TARGET = "Churn"
 
 
+class FeatureEngineer:
+    """Create derived features and prepare the modelling matrix."""
+
+    @staticmethod
+    def add_derived_features(df: pd.DataFrame) -> pd.DataFrame:
+        out = df.copy()
+        out["AvgMonthlySpend"] = np.where(
+            out["tenure"] > 0,
+            out["TotalCharges"] / out["tenure"],
+            out["MonthlyCharges"],
+        )
+        out["tenure_bucket"] = pd.cut(
+            out["tenure"],
+            bins=[0, 12, 24, 48, 72],
+            labels=["0-12", "12-24", "24-48", "48-72"],
+            include_lowest=True,
+        ).astype(str)
+        out["has_internet"] = (out["InternetService"] != "No").astype(int)
+        out["num_services"] = 0
+        for col in [
+            "OnlineSecurity",
+            "OnlineBackup",
+            "DeviceProtection",
+            "TechSupport",
+            "StreamingTV",
+            "StreamingMovies",
+        ]:
+            out["num_services"] += (out[col] == "Yes").astype(int)
+        return out
+
+    @staticmethod
+    def build_preprocessor() -> ColumnTransformer:
+        numeric_cols = NUMERIC_FEATURES + ["AvgMonthlySpend", "has_internet", "num_services"]
+        categorical_cols = CATEGORICAL_FEATURES + ["tenure_bucket"]
+        return ColumnTransformer(
+            transformers=[
+                ("num", StandardScaler(), numeric_cols),
+                ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), categorical_cols),
+            ],
+            remainder="drop",
+        )
+
+
