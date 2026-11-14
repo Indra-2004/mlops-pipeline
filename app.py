@@ -41,3 +41,41 @@ ARTIFACTS_DIR = os.path.join(PROJECT_DIR, "artifacts")
 METRICS_DIR = os.path.join(PROJECT_DIR, "metrics")
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+@st.cache_data
+def cached_load_data():
+    try:
+        train_df, test_df = load_training_data(DATA_DIR)
+        return train_df, test_df
+    except FileNotFoundError:
+        return None, None
+
+
+@st.cache_data
+def cached_load_drift():
+    try:
+        return load_drift_data(DATA_DIR)
+    except FileNotFoundError:
+        return None
+
+
+def load_metrics_log():
+    ml = MetricsLogger(os.path.join(METRICS_DIR, "metrics_log.json"))
+    return ml.read_all()
+
+
+def load_latest_run():
+    path = os.path.join(METRICS_DIR, "latest_run.json")
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)
+    return None
+
+
+def load_registry():
+    reg = ModelRegistry(ARTIFACTS_DIR)
+    return reg.list_versions()
+
+
