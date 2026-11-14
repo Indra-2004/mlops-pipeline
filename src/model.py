@@ -24,3 +24,27 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Feature engineering
+# ---------------------------------------------------------------------------
+NUMERIC_FEATURES = ["tenure", "MonthlyCharges", "TotalCharges", "SeniorCitizen"]
+CATEGORICAL_FEATURES = [
+    "gender",
+    "Partner",
+    "Dependents",
+    "PhoneService",
+    "MultipleLines",
+    "InternetService",
+    "OnlineSecurity",
+    "OnlineBackup",
+    "DeviceProtection",
+    "TechSupport",
+    "StreamingTV",
+    "StreamingMovies",
+    "Contract",
+    "PaperlessBilling",
+    "PaymentMethod",
+]
+TARGET = "Churn"
+
+
