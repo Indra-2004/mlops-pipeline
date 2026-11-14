@@ -147,3 +147,44 @@ class PipelineRun:
 
     # -----------------------------------------------------------------------
     # Step 5: Compare with production model
+    # -----------------------------------------------------------------------
+    def step_compare_with_production(self) -> Dict:
+        t0 = time.time()
+        prod_version = self.registry.get_production_version()
+
+        if prod_version is None:
+            self._comparison = {
+                "promote_challenger": True,
+                "reason": "no production model exists",
+            }
+            duration = time.time() - t0
+            self._log_step(
+                "compare_models",
+                "PASSED",
+                "No production model — challenger auto-promoted",
+                duration,
+            )
+            return self._comparison
+
+        # Load production metadata
+        _, prod_meta = self.registry.load_model(prod_version)
+        prod_metrics = prod_meta.get("metrics", {})
+
+        self._comparison = compare_models(
+            prod_metrics,
+            self._metrics,
+            primary_metric=self.config.primary_metric,
+            threshold=self.config.promotion_threshold,
+        )
+        duration = time.time() - t0
+        outcome = "PROMOTE" if self._comparison["promote_challenger"] else "KEEP"
+        self._log_step(
+            "compare_models",
+            "PASSED",
+            f"{outcome} — diff={self._comparison['difference']:+.4f}",
+            duration,
+        )
+        return self._comparison
+
+    # -----------------------------------------------------------------------
+    # Step 6: Promote if better
