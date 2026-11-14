@@ -46,3 +46,62 @@ Impact    →  PSI-based retraining triggers, model registry with full audit tra
 | CI/CD | GitHub Actions on push to main |
 
 ---
+
+## Architecture
+
+```
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│  Data            │───▶│  Feature         │───▶│  Model           │
+│  validation      │    │  engineering     │    │  training        │
+└──────────────────┘    └──────────────────┘    └────────┬─────────┘
+                                                         │
+                          ┌──────────────────────────────┘
+                          ▼
+              ┌──────────────────────┐    ┌──────────────────────┐
+              │  Holdout             │───▶│  Champion vs         │
+              │  evaluation          │    │  challenger          │
+              └──────────────────────┘    └──────────┬───────────┘
+                                                     │
+                          ┌──────────────────────────┘
+                          ▼
+              ┌──────────────────────┐    ┌──────────────────────┐
+              │  Conditional         │───▶│  Drift               │
+              │  promotion           │    │  monitoring (PSI)    │
+              └──────────────────────┘    └──────────────────────┘
+```
+
+<details>
+<summary><b>Project structure</b></summary>
+
+```
+project_structure/
+├── .github/
+│   └── workflows/
+│       └── train.yml                  # CI/CD pipeline
+├── data/
+│   ├── generate_data.py               # Synthetic data generator
+│   ├── train.csv                      # Training set
+│   ├── test.csv                       # Holdout set
+│   └── drift.csv                      # Shifted distribution set
+├── src/
+│   ├── __init__.py
+│   ├── data_loader.py                 # Loading, validation, schema checks
+│   ├── model.py                       # Training, evaluation, registry, PSI
+│   └── pipeline.py                    # End-to-end orchestration
+├── notebooks/
+│   ├── 01_eda.ipynb                   # Data validation and distributions
+│   ├── 02_feature_engineering.ipynb   # Feature pipeline and PSI demo
+│   ├── 03_modeling.ipynb              # Training and versioning
+│   └── 04_evaluation.ipynb            # Monitoring and retraining triggers
+├── artifacts/                         # Model registry (generated)
+├── metrics/                           # Run logs (generated)
+├── app.py                             # Streamlit dashboard
+├── Dockerfile                         # Container definition
+├── requirements.txt
+├── index.html
+└── README.md
+```
+
+</details>
+
+---
