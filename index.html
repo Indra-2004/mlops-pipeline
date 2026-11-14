@@ -736,3 +736,28 @@ footer a:hover { color: var(--gold); }
   </div>
 </footer>
 
+<script>
+(function() {
+  const toggle = document.getElementById('themeToggle');
+  const html = document.documentElement;
+  const stored = localStorage.getItem('theme');
+  if (stored === 'light') {
+    html.setAttribute('data-theme', 'light');
+    toggle.textContent = 'Dark';
+  }
+  toggle.addEventListener('click', function() {
+    const isLight = html.getAttribute('data-theme') === 'light';
+    if (isLight) {
+      html.removeAttribute('data-theme');
+      toggle.textContent = 'Light';
+      localStorage.setItem('theme', 'dark');
+    } else {
+      html.setAttribute('data-theme', 'light');
+      toggle.textContent = 'Dark';
+      localStorage.setItem('theme', 'light');
+    }
+  });
+})();
+</script>
+</body>
+</html>
