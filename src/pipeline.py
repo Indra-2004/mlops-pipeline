@@ -32,3 +32,23 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class PipelineConfig:
+    """Central configuration for a pipeline run."""
+
+    def __init__(
+        self,
+        data_dir: str = "data",
+        artifacts_dir: str = "artifacts",
+        metrics_dir: str = "metrics",
+        primary_metric: str = "roc_auc",
+        promotion_threshold: float = 0.005,
+        psi_retrain_threshold: float = 0.25,
+    ):
+        self.data_dir = os.path.join(PROJECT_DIR, data_dir)
+        self.artifacts_dir = os.path.join(PROJECT_DIR, artifacts_dir)
+        self.metrics_dir = os.path.join(PROJECT_DIR, metrics_dir)
+        self.primary_metric = primary_metric
+        self.promotion_threshold = promotion_threshold
+        self.psi_retrain_threshold = psi_retrain_threshold
+
+
