@@ -63,3 +63,16 @@ class PipelineRun:
         )
         self.run_log: Dict = {"steps": [], "started_at": datetime.utcnow().isoformat()}
 
+    # -----------------------------------------------------------------------
+    def _log_step(self, name: str, status: str, detail: str = "", duration: float = 0):
+        entry = {
+            "step": name,
+            "status": status,
+            "detail": detail,
+            "duration_s": round(duration, 3),
+        }
+        self.run_log["steps"].append(entry)
+        logger.info("Step [%s] %s — %s (%.2fs)", name, status, detail, duration)
+
+    # -----------------------------------------------------------------------
+    # Step 1: Validate data
