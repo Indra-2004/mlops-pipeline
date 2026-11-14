@@ -200,3 +200,71 @@ elif page == "Model registry":
             st.plotly_chart(fig, use_container_width=True)
 
 
+# ---------------------------------------------------------------------------
+# Page: Data drift monitor
+# ---------------------------------------------------------------------------
+elif page == "Data drift monitor":
+    st.title("Data drift monitor")
+    st.markdown("Population Stability Index (PSI) comparison between training and incoming data.")
+
+    train_df, _ = cached_load_data()
+    drift_df = cached_load_drift()
+
+    if train_df is None or drift_df is None:
+        st.warning("Training or drift data not found. Generate data first.")
+    else:
+        psi_scores = compute_psi(train_df, drift_df)
+
+        st.subheader("PSI per feature")
+        psi_df = pd.DataFrame([
+            {"Feature": k, "PSI": v, "Status": "Significant shift" if v > 0.25 else ("Moderate shift" if v > 0.10 else "No shift")}
+            for k, v in sorted(psi_scores.items(), key=lambda x: -x[1])
+        ])
+        st.dataframe(psi_df, use_container_width=True, hide_index=True)
+
+        # Bar chart
+        fig = px.bar(
+            psi_df,
+            x="Feature",
+            y="PSI",
+            color="Status",
+            color_discrete_map={
+                "No shift": "#22c55e",
+                "Moderate shift": "#f59e0b",
+                "Significant shift": "#ef4444",
+            },
+            title="PSI scores by feature",
+        )
+        fig.add_hline(y=0.25, line_dash="dash", line_color="#ef4444", annotation_text="Retrain threshold")
+        fig.add_hline(y=0.10, line_dash="dot", line_color="#f59e0b", annotation_text="Investigation threshold")
+        fig.update_layout(
+            template="plotly_dark",
+            plot_bgcolor="rgba(0,0,0,0)",
+            paper_bgcolor="rgba(0,0,0,0)",
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        # Distribution overlays
+        st.subheader("Feature distributions (train vs drift)")
+        numeric_cols = sorted(psi_scores.keys())
+        selected = st.selectbox("Select feature", numeric_cols)
+        if selected:
+            fig2 = go.Figure()
+            fig2.add_trace(go.Histogram(
+                x=train_df[selected], name="Training", opacity=0.6,
+                marker_color="#3B6FD4", nbinsx=40,
+            ))
+            fig2.add_trace(go.Histogram(
+                x=drift_df[selected], name="Drift", opacity=0.6,
+                marker_color="#E8C230", nbinsx=40,
+            ))
+            fig2.update_layout(
+                barmode="overlay",
+                template="plotly_dark",
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                title=f"{selected} — PSI = {psi_scores.get(selected, 0):.4f}",
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+
+
