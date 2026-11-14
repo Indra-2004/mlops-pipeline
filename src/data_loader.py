@@ -92,3 +92,13 @@ def validate_schema(df: pd.DataFrame) -> ValidationResult:
     return result
 
 
+def validate_nulls(df: pd.DataFrame) -> ValidationResult:
+    """Check that null rates stay below the threshold."""
+    result = ValidationResult()
+    for col in df.columns:
+        rate = df[col].isna().mean()
+        ok = rate <= NULL_THRESHOLD
+        result.add(f"null_rate_{col}", ok, f"{rate:.4f} (threshold {NULL_THRESHOLD})")
+    return result
+
+
