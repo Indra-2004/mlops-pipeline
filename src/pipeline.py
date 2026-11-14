@@ -131,3 +131,19 @@ class PipelineRun:
 
     # -----------------------------------------------------------------------
     # Step 4: Evaluate on holdout
+    # -----------------------------------------------------------------------
+    def step_evaluate(self) -> Dict:
+        t0 = time.time()
+        self._metrics = ModelEvaluator.evaluate(self._trainer, self._test_df)
+        duration = time.time() - t0
+        self._log_step(
+            "evaluate",
+            "PASSED",
+            f"AUC={self._metrics['roc_auc']:.4f}, F1={self._metrics['f1']:.4f}",
+            duration,
+        )
+        self.run_log["holdout_metrics"] = self._metrics
+        return self._metrics
+
+    # -----------------------------------------------------------------------
+    # Step 5: Compare with production model
