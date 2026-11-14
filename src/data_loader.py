@@ -42,3 +42,26 @@ EXPECTED_COLUMNS = list(EXPECTED_SCHEMA.keys())
 NULL_THRESHOLD = 0.05  # max 5 % nulls per column
 
 
+# ---------------------------------------------------------------------------
+# Validation helpers
+# ---------------------------------------------------------------------------
+class ValidationResult:
+    """Container for data validation outcomes."""
+
+    def __init__(self):
+        self.checks: List[Dict] = []
+        self.passed = True
+
+    def add(self, name: str, passed: bool, detail: str = ""):
+        self.checks.append({"check": name, "passed": passed, "detail": detail})
+        if not passed:
+            self.passed = False
+
+    def to_dict(self) -> List[Dict]:
+        return self.checks
+
+    def summary(self) -> str:
+        n_pass = sum(1 for c in self.checks if c["passed"])
+        return f"{n_pass}/{len(self.checks)} checks passed"
+
+
