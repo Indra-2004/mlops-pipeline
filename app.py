@@ -148,3 +148,55 @@ if page == "Pipeline status":
                 st.dataframe(val_df, use_container_width=True, hide_index=True)
 
 
+# ---------------------------------------------------------------------------
+# Page: Model registry
+# ---------------------------------------------------------------------------
+elif page == "Model registry":
+    st.title("Model registry")
+    st.markdown("All model versions with their metrics and timestamps.")
+
+    versions = load_registry()
+    if not versions:
+        st.info("No models registered yet. Run the pipeline first.")
+    else:
+        # Production flag
+        reg = ModelRegistry(ARTIFACTS_DIR)
+        prod = reg.get_production_version()
+
+        rows = []
+        for v in versions:
+            m = v.get("metrics", {})
+            rows.append({
+                "Version": v["version"],
+                "Timestamp": v.get("timestamp", "")[:19],
+                "AUC": m.get("roc_auc", 0),
+                "F1": m.get("f1", 0),
+                "Accuracy": m.get("accuracy", 0),
+                "Precision": m.get("precision", 0),
+                "Recall": m.get("recall", 0),
+                "Production": "Yes" if v["version"] == prod else "",
+            })
+        reg_df = pd.DataFrame(rows)
+        st.dataframe(reg_df, use_container_width=True, hide_index=True)
+
+        # Metrics over time
+        if len(rows) > 1:
+            st.subheader("Metrics over time")
+            fig = go.Figure()
+            for metric_name in ["AUC", "F1", "Accuracy"]:
+                fig.add_trace(go.Scatter(
+                    x=reg_df["Version"],
+                    y=reg_df[metric_name],
+                    mode="lines+markers",
+                    name=metric_name,
+                ))
+            fig.update_layout(
+                template="plotly_dark",
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                yaxis_title="Score",
+                xaxis_title="Model version",
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+
