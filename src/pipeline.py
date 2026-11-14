@@ -206,3 +206,50 @@ class PipelineRun:
 
     # -----------------------------------------------------------------------
     # Full run
+    # -----------------------------------------------------------------------
+    def run(self) -> Dict:
+        """Execute the full pipeline end-to-end."""
+        logger.info("=" * 60)
+        logger.info("PIPELINE RUN STARTED")
+        logger.info("=" * 60)
+
+        self.step_validate_data()
+        self.step_engineer_features()
+        self.step_train_model()
+        self.step_evaluate()
+        self.step_compare_with_production()
+        version = self.step_promote()
+
+        # Check drift if drift data exists
+        try:
+            drift_df = load_drift_data(self.config.data_dir)
+            psi_scores = compute_psi(self._train_df, drift_df)
+            self.run_log["psi_scores"] = psi_scores
+            max_psi = max(psi_scores.values()) if psi_scores else 0
+            needs_retrain = max_psi > self.config.psi_retrain_threshold
+            self.run_log["drift_detected"] = needs_retrain
+            self.run_log["max_psi"] = max_psi
+            logger.info(
+                "Drift check: max PSI=%.4f, retrain=%s", max_psi, needs_retrain
+            )
+        except FileNotFoundError:
+            logger.info("No drift dataset found — skipping drift check")
+
+        self.run_log["finished_at"] = datetime.utcnow().isoformat()
+        self.run_log["status"] = "SUCCESS"
+
+        # Persist run log
+        self.metrics_logger.log(self.run_log)
+
+        # Save latest run summary
+        summary_path = os.path.join(self.config.metrics_dir, "latest_run.json")
+        os.makedirs(os.path.dirname(summary_path), exist_ok=True)
+        with open(summary_path, "w") as f:
+            json.dump(self.run_log, f, indent=2, default=str)
+
+        logger.info("=" * 60)
+        logger.info("PIPELINE RUN COMPLETE — version %s", version)
+        logger.info("=" * 60)
+        return self.run_log
+
+
