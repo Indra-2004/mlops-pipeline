@@ -91,3 +91,22 @@ class FeatureEngineer:
         )
 
 
+# ---------------------------------------------------------------------------
+# Drift detection — Population Stability Index (PSI)
+# ---------------------------------------------------------------------------
+def _psi_bucket(expected: np.ndarray, actual: np.ndarray, bins: int = 10) -> float:
+    """Compute PSI between two 1-d arrays."""
+    eps = 1e-4
+    breakpoints = np.linspace(
+        min(expected.min(), actual.min()),
+        max(expected.max(), actual.max()),
+        bins + 1,
+    )
+    expected_pct = np.histogram(expected, bins=breakpoints)[0] / len(expected)
+    actual_pct = np.histogram(actual, bins=breakpoints)[0] / len(actual)
+    expected_pct = np.clip(expected_pct, eps, None)
+    actual_pct = np.clip(actual_pct, eps, None)
+    psi = np.sum((actual_pct - expected_pct) * np.log(actual_pct / expected_pct))
+    return float(psi)
+
+
