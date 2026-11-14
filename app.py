@@ -79,3 +79,17 @@ def load_registry():
     return reg.list_versions()
 
 
+# ---------------------------------------------------------------------------
+# Sidebar
+# ---------------------------------------------------------------------------
+page = st.sidebar.radio(
+    "Navigation",
+    [
+        "Pipeline status",
+        "Model registry",
+        "Data drift monitor",
+        "Model comparison",
+        "Retrain",
+    ],
+)
+
