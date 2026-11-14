@@ -224,9 +224,10 @@ class PipelineRun:
         try:
             drift_df = load_drift_data(self.config.data_dir)
             psi_scores = compute_psi(self._train_df, drift_df)
+            psi_scores = {k: float(v) for k, v in psi_scores.items()}
             self.run_log["psi_scores"] = psi_scores
-            max_psi = max(psi_scores.values()) if psi_scores else 0
-            needs_retrain = max_psi > self.config.psi_retrain_threshold
+            max_psi = max(psi_scores.values()) if psi_scores else 0.0
+            needs_retrain = bool(max_psi > self.config.psi_retrain_threshold)
             self.run_log["drift_detected"] = needs_retrain
             self.run_log["max_psi"] = max_psi
             logger.info(
