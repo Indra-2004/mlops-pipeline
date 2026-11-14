@@ -471,3 +471,45 @@ footer a:hover { color: var(--gold); }
   </div>
 </header>
 
+<!-- Overview -->
+<section class="fade-up">
+  <h2>Overview</h2>
+  <p class="section-sub">End-to-end ML pipeline with data validation, training, evaluation, and conditional promotion</p>
+  <p class="method-text">
+    Production ML models degrade over time as incoming data distributions shift. This pipeline wraps a churn prediction model in six automated stages: data validation, feature engineering, model training, holdout evaluation, champion/challenger comparison, and conditional promotion. PSI monitors every numeric feature for drift, and the pipeline runs automatically via GitHub Actions on every push to main.
+  </p>
+
+  <div class="pipeline" style="grid-template-columns: repeat(6, 1fr);">
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Validate</div>
+      <div class="pipeline-detail">Schema, nulls</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Features</div>
+      <div class="pipeline-detail">Engineer, scale</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Train</div>
+      <div class="pipeline-detail">GBM, 5-fold CV</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Evaluate</div>
+      <div class="pipeline-detail">Holdout metrics</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Compare</div>
+      <div class="pipeline-detail">A vs B</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Promote</div>
+      <div class="pipeline-detail">If better</div>
+    </div>
+  </div>
+</section>
+
