@@ -253,3 +253,9 @@ class PipelineRun:
         return self.run_log
 
 
+# ---------------------------------------------------------------------------
+# CLI entry point
+# ---------------------------------------------------------------------------
+if __name__ == "__main__":
+    result = PipelineRun().run()
+    print(json.dumps({"status": result["status"], "version": result.get("model_version")}, indent=2))
