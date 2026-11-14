@@ -188,3 +188,26 @@ class ModelTrainer:
         return {"mean_auc": float(scores.mean()), "std_auc": float(scores.std())}
 
 
+# ---------------------------------------------------------------------------
+# Model evaluator
+# ---------------------------------------------------------------------------
+class ModelEvaluator:
+    """Evaluate a trained model on a holdout set."""
+
+    @staticmethod
+    def evaluate(trainer: ModelTrainer, df: pd.DataFrame) -> Dict[str, float]:
+        y_true = df[TARGET].values
+        y_pred = trainer.predict(df)
+        y_prob = trainer.predict_proba(df)
+
+        metrics = {
+            "accuracy": float(accuracy_score(y_true, y_pred)),
+            "precision": float(precision_score(y_true, y_pred, zero_division=0)),
+            "recall": float(recall_score(y_true, y_pred, zero_division=0)),
+            "f1": float(f1_score(y_true, y_pred, zero_division=0)),
+            "roc_auc": float(roc_auc_score(y_true, y_prob)),
+        }
+        logger.info("Evaluation: %s", metrics)
+        return metrics
+
+
