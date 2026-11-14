@@ -4,7 +4,7 @@
 
 <p>
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-  <img src="https://img.shields.io/badge/AUC-0.85+-22c55e?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Holdout_AUC-0.60-3B6FD4?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/PSI_Drift-Detected-f59e0b?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/Status-Active-22c55e?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge"/>
@@ -38,12 +38,21 @@ Impact    →  PSI-based retraining triggers, model registry with full audit tra
 
 ## Key results
 
+Measured by running `python -m src.pipeline` on the default seeded datasets.
+
 | Metric | Value |
 |--------|-------|
-| Holdout ROC AUC | 0.85+ |
-| PSI drift detected | 3 features above threshold |
+| 5-fold CV ROC AUC | 0.60 ± 0.02 |
+| Holdout ROC AUC | 0.60 |
+| Best achievable AUC on this data | ~0.65 |
+| Holdout ROC AUC on drifted data | 0.58 |
+| PSI drift detected | 3 features above 0.25 (tenure 1.92, TotalCharges 0.62, MonthlyCharges 0.28) |
 | Model versions tracked | Timestamp-based registry |
 | CI/CD | GitHub Actions on push to main |
+
+**Why the AUC is modest:** the synthetic churn label is drawn at random from a probability built from just three rules (short tenure, month-to-month contract, high monthly charges). Scoring the test set with that exact generating probability gives an AUC of about 0.65, so that is the ceiling for any model on this data. The model reaches about 90% of it, and cross-validation and holdout scores agree, so it is not overfitting. The focus of this project is the lifecycle around the model: validation, versioning, gated promotion and drift monitoring.
+
+**Threshold note:** with about 25% churners, the default 0.5 threshold gives low recall (about 0.14). Lowering the threshold to 0.25 raises recall to about 0.53 at similar precision (about 0.33), which suits a retention use case better.
 
 ---
 
