@@ -65,3 +65,30 @@ class ValidationResult:
         return f"{n_pass}/{len(self.checks)} checks passed"
 
 
+def validate_schema(df: pd.DataFrame) -> ValidationResult:
+    """Check that the dataframe matches the expected column set and dtypes."""
+    result = ValidationResult()
+
+    # Column presence
+    missing = set(EXPECTED_COLUMNS) - set(df.columns)
+    extra = set(df.columns) - set(EXPECTED_COLUMNS)
+    result.add(
+        "columns_present",
+        len(missing) == 0,
+        f"missing={list(missing)}" if missing else "all columns present",
+    )
+    if extra:
+        result.add("no_extra_columns", False, f"extra={list(extra)}")
+    else:
+        result.add("no_extra_columns", True, "no unexpected columns")
+
+    # Dtype compatibility
+    for col, expected_dtype in EXPECTED_SCHEMA.items():
+        if col in df.columns:
+            actual = str(df[col].dtype)
+            ok = actual == expected_dtype
+            result.add(f"dtype_{col}", ok, f"expected {expected_dtype}, got {actual}")
+
+    return result
+
+
