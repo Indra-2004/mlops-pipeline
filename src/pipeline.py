@@ -95,3 +95,21 @@ class PipelineRun:
 
     # -----------------------------------------------------------------------
     # Step 2: Engineer features
+    # -----------------------------------------------------------------------
+    def step_engineer_features(self) -> pd.DataFrame:
+        t0 = time.time()
+        fe = FeatureEngineer()
+        self._train_feat = fe.add_derived_features(self._train_df)
+        self._test_feat = fe.add_derived_features(self._test_df)
+        n_new = len(self._train_feat.columns) - len(self._train_df.columns)
+        duration = time.time() - t0
+        self._log_step(
+            "engineer_features",
+            "PASSED",
+            f"{n_new} derived features added",
+            duration,
+        )
+        return self._train_feat
+
+    # -----------------------------------------------------------------------
+    # Step 3: Train model
