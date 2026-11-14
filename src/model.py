@@ -313,3 +313,27 @@ def compare_models(
     }
 
 
+# ---------------------------------------------------------------------------
+# Metrics logger
+# ---------------------------------------------------------------------------
+class MetricsLogger:
+    """Append pipeline run metrics to a JSON-lines file."""
+
+    def __init__(self, log_path: str = "metrics/metrics_log.json"):
+        self.log_path = log_path
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+
+    def log(self, entry: Dict) -> None:
+        entry["logged_at"] = datetime.utcnow().isoformat()
+        with open(self.log_path, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+
+    def read_all(self) -> List[Dict]:
+        entries = []
+        if os.path.exists(self.log_path):
+            with open(self.log_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        entries.append(json.loads(line))
+        return entries
