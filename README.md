@@ -35,3 +35,14 @@ Impact    →  PSI-based retraining triggers, model registry with full audit tra
 ```
 
 ---
+
+## Key results
+
+| Metric | Value |
+|--------|-------|
+| Holdout ROC AUC | 0.85+ |
+| PSI drift detected | 3 features above threshold |
+| Model versions tracked | Timestamp-based registry |
+| CI/CD | GitHub Actions on push to main |
+
+---
