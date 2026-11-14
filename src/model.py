@@ -211,3 +211,74 @@ class ModelEvaluator:
         return metrics
 
 
+# ---------------------------------------------------------------------------
+# Model registry (local simulation)
+# ---------------------------------------------------------------------------
+class ModelRegistry:
+    """Simple file-system model registry with timestamp versioning."""
+
+    def __init__(self, registry_dir: str = "artifacts"):
+        self.registry_dir = registry_dir
+        os.makedirs(registry_dir, exist_ok=True)
+
+    def _version_tag(self) -> str:
+        return datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+
+    def save_model(
+        self,
+        trainer: ModelTrainer,
+        metrics: Dict[str, float],
+        tag: Optional[str] = None,
+    ) -> str:
+        version = tag or self._version_tag()
+        model_dir = os.path.join(self.registry_dir, version)
+        os.makedirs(model_dir, exist_ok=True)
+
+        model_path = os.path.join(model_dir, "model.joblib")
+        joblib.dump(trainer.pipeline, model_path)
+
+        meta = {
+            "version": version,
+            "timestamp": datetime.utcnow().isoformat(),
+            "metrics": metrics,
+            "model_params": trainer.model_params,
+        }
+        meta_path = os.path.join(model_dir, "metadata.json")
+        with open(meta_path, "w") as f:
+            json.dump(meta, f, indent=2)
+
+        logger.info("Saved model version %s to %s", version, model_dir)
+        return version
+
+    def load_model(self, version: str) -> Tuple[Pipeline, Dict]:
+        model_dir = os.path.join(self.registry_dir, version)
+        pipeline = joblib.load(os.path.join(model_dir, "model.joblib"))
+        with open(os.path.join(model_dir, "metadata.json")) as f:
+            meta = json.load(f)
+        return pipeline, meta
+
+    def list_versions(self) -> List[Dict]:
+        versions = []
+        if not os.path.exists(self.registry_dir):
+            return versions
+        for name in sorted(os.listdir(self.registry_dir)):
+            meta_path = os.path.join(self.registry_dir, name, "metadata.json")
+            if os.path.exists(meta_path):
+                with open(meta_path) as f:
+                    versions.append(json.load(f))
+        return versions
+
+    def get_production_version(self) -> Optional[str]:
+        prod_path = os.path.join(self.registry_dir, "production.json")
+        if os.path.exists(prod_path):
+            with open(prod_path) as f:
+                return json.load(f).get("version")
+        return None
+
+    def promote_to_production(self, version: str) -> None:
+        prod_path = os.path.join(self.registry_dir, "production.json")
+        with open(prod_path, "w") as f:
+            json.dump({"version": version, "promoted_at": datetime.utcnow().isoformat()}, f, indent=2)
+        logger.info("Promoted version %s to production", version)
+
+
