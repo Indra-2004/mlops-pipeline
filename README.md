@@ -134,3 +134,16 @@ docker run -p 8501:8501 mlops-pipeline
 ```
 
 ---
+
+## Dataset
+
+| Property | Details |
+|----------|---------|
+| Source | Synthetic telecom churn data |
+| Train size | 5 000 rows |
+| Test size | 1 500 rows |
+| Drift set | 2 000 rows (shifted distributions) |
+| Target | Binary churn (0/1) |
+| Features | 19 (demographic, service, billing) |
+
+---
