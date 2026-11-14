@@ -113,3 +113,21 @@ class PipelineRun:
 
     # -----------------------------------------------------------------------
     # Step 3: Train model
+    # -----------------------------------------------------------------------
+    def step_train_model(self) -> ModelTrainer:
+        t0 = time.time()
+        self._trainer = ModelTrainer()
+        self._trainer.fit(self._train_df)
+        cv = self._trainer.cross_validate(self._train_df, cv=5)
+        duration = time.time() - t0
+        self._log_step(
+            "train_model",
+            "PASSED",
+            f"CV AUC={cv['mean_auc']:.4f} +/- {cv['std_auc']:.4f}",
+            duration,
+        )
+        self.run_log["cv_metrics"] = cv
+        return self._trainer
+
+    # -----------------------------------------------------------------------
+    # Step 4: Evaluate on holdout
