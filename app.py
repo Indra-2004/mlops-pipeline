@@ -348,3 +348,62 @@ elif page == "Model comparison":
             st.plotly_chart(fig, use_container_width=True)
 
 
+# ---------------------------------------------------------------------------
+# Page: Retrain
+# ---------------------------------------------------------------------------
+elif page == "Retrain":
+    st.title("Retrain pipeline")
+    st.markdown("Trigger a new pipeline run or regenerate data.")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Generate data")
+        if st.button("Regenerate datasets"):
+            with st.spinner("Generating train, test, and drift datasets..."):
+                train_df = generate_synthetic_churn_data(5000, seed=int(time.time()) % 10000)
+                test_df = generate_synthetic_churn_data(1500, seed=int(time.time()) % 10000 + 1)
+                drift_df = generate_synthetic_churn_data(2000, seed=int(time.time()) % 10000 + 2, drift=True)
+
+                os.makedirs(DATA_DIR, exist_ok=True)
+                train_df.to_csv(os.path.join(DATA_DIR, "train.csv"), index=False)
+                test_df.to_csv(os.path.join(DATA_DIR, "test.csv"), index=False)
+                drift_df.to_csv(os.path.join(DATA_DIR, "drift.csv"), index=False)
+            st.success(f"Generated {len(train_df)} train, {len(test_df)} test, {len(drift_df)} drift rows.")
+            st.cache_data.clear()
+
+    with col2:
+        st.subheader("Run pipeline")
+        if st.button("Trigger retraining"):
+            with st.spinner("Running full pipeline..."):
+                try:
+                    config = PipelineConfig(
+                        data_dir="data",
+                        artifacts_dir="artifacts",
+                        metrics_dir="metrics",
+                    )
+                    run = PipelineRun(config)
+                    result = run.run()
+                    st.success(f"Pipeline finished — status: {result['status']}, version: {result.get('model_version', '—')}")
+                    st.json(result.get("holdout_metrics", {}))
+                except Exception as e:
+                    st.error(f"Pipeline failed: {e}")
+
+    # Run history
+    st.subheader("Run history")
+    entries = load_metrics_log()
+    if entries:
+        history_rows = []
+        for e in entries:
+            hm = e.get("holdout_metrics", {})
+            history_rows.append({
+                "Logged at": e.get("logged_at", "")[:19],
+                "Status": e.get("status", ""),
+                "Version": e.get("model_version", ""),
+                "AUC": hm.get("roc_auc", ""),
+                "F1": hm.get("f1", ""),
+                "Drift detected": e.get("drift_detected", ""),
+            })
+        st.dataframe(pd.DataFrame(history_rows), use_container_width=True, hide_index=True)
+    else:
+        st.info("No runs recorded yet.")
