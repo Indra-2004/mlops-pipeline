@@ -162,3 +162,23 @@ def run_all_validations(
     return combined
 
 
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+def load_training_data(data_dir: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Load train and test CSV files from *data_dir*."""
+    train_path = os.path.join(data_dir, "train.csv")
+    test_path = os.path.join(data_dir, "test.csv")
+
+    if not os.path.exists(train_path):
+        raise FileNotFoundError(f"Training data not found at {train_path}")
+    if not os.path.exists(test_path):
+        raise FileNotFoundError(f"Test data not found at {test_path}")
+
+    train_df = pd.read_csv(train_path)
+    test_df = pd.read_csv(test_path)
+
+    logger.info("Loaded %d train rows, %d test rows", len(train_df), len(test_df))
+    return train_df, test_df
+
+
