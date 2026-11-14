@@ -282,3 +282,34 @@ class ModelRegistry:
         logger.info("Promoted version %s to production", version)
 
 
+# ---------------------------------------------------------------------------
+# A/B model comparison
+# ---------------------------------------------------------------------------
+def compare_models(
+    metrics_a: Dict[str, float],
+    metrics_b: Dict[str, float],
+    primary_metric: str = "roc_auc",
+    threshold: float = 0.005,
+) -> Dict[str, Any]:
+    """Compare champion (A) vs challenger (B).
+
+    Returns a dict with the comparison outcome.  The challenger is promoted
+    only if it beats the champion by at least *threshold* on the primary metric.
+    """
+    val_a = metrics_a.get(primary_metric, 0)
+    val_b = metrics_b.get(primary_metric, 0)
+    diff = val_b - val_a
+
+    promote = diff > threshold
+    return {
+        "champion_metric": val_a,
+        "challenger_metric": val_b,
+        "difference": diff,
+        "threshold": threshold,
+        "primary_metric": primary_metric,
+        "promote_challenger": promote,
+        "all_champion": metrics_a,
+        "all_challenger": metrics_b,
+    }
+
+
