@@ -105,3 +105,32 @@ project_structure/
 </details>
 
 ---
+
+## Quickstart
+
+```bash
+# Clone and navigate
+git clone https://github.com/Indra-2004/mlops-pipeline.git
+cd mlops-pipeline
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Generate datasets
+python data/generate_data.py
+
+# Run the full pipeline
+python -m src.pipeline
+
+# Launch dashboard
+streamlit run app.py
+```
+
+### Docker
+
+```bash
+docker build -t mlops-pipeline .
+docker run -p 8501:8501 mlops-pipeline
+```
+
+---
