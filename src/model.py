@@ -136,3 +136,55 @@ def compute_psi(
     return results
 
 
+# ---------------------------------------------------------------------------
+# Model trainer
+# ---------------------------------------------------------------------------
+class ModelTrainer:
+    """Wraps the full sklearn pipeline: preprocessing + classifier."""
+
+    def __init__(self, model_params: Optional[Dict] = None):
+        self.model_params = model_params or {
+            "n_estimators": 200,
+            "max_depth": 5,
+            "learning_rate": 0.1,
+            "subsample": 0.8,
+            "random_state": 42,
+        }
+        self.pipeline: Optional[Pipeline] = None
+        self.feature_engineer = FeatureEngineer()
+
+    def fit(self, df: pd.DataFrame) -> "ModelTrainer":
+        df_feat = self.feature_engineer.add_derived_features(df)
+        X = df_feat.drop(columns=[TARGET])
+        y = df_feat[TARGET]
+
+        preprocessor = self.feature_engineer.build_preprocessor()
+        clf = GradientBoostingClassifier(**self.model_params)
+        self.pipeline = Pipeline([("preprocessor", preprocessor), ("classifier", clf)])
+        self.pipeline.fit(X, y)
+        logger.info("Model trained on %d samples", len(X))
+        return self
+
+    def predict(self, df: pd.DataFrame) -> np.ndarray:
+        df_feat = self.feature_engineer.add_derived_features(df)
+        X = df_feat.drop(columns=[TARGET], errors="ignore")
+        return self.pipeline.predict(X)
+
+    def predict_proba(self, df: pd.DataFrame) -> np.ndarray:
+        df_feat = self.feature_engineer.add_derived_features(df)
+        X = df_feat.drop(columns=[TARGET], errors="ignore")
+        return self.pipeline.predict_proba(X)[:, 1]
+
+    def cross_validate(self, df: pd.DataFrame, cv: int = 5) -> Dict[str, float]:
+        df_feat = self.feature_engineer.add_derived_features(df)
+        X = df_feat.drop(columns=[TARGET])
+        y = df_feat[TARGET]
+
+        preprocessor = self.feature_engineer.build_preprocessor()
+        clf = GradientBoostingClassifier(**self.model_params)
+        pipe = Pipeline([("preprocessor", preprocessor), ("classifier", clf)])
+
+        scores = cross_val_score(pipe, X, y, cv=cv, scoring="roc_auc")
+        return {"mean_auc": float(scores.mean()), "std_auc": float(scores.std())}
+
+
