@@ -162,3 +162,56 @@ docker run -p 8501:8501 mlops-pipeline
 </p>
 
 ---
+
+## Methodology
+
+<details>
+<summary><b>Data validation</b></summary>
+
+- Schema checks: column presence, dtype verification
+- Null rate thresholds (max 5% per column)
+- Range checks for numeric features (tenure >= 0, charges >= 0)
+- Distribution drift detection against a reference dataset
+</details>
+
+<details>
+<summary><b>Feature engineering</b></summary>
+
+- Average monthly spend (TotalCharges / tenure)
+- Tenure bucketing into lifecycle stages
+- Internet service flag and service count aggregation
+- StandardScaler for numeric, OneHotEncoder for categorical
+</details>
+
+<details>
+<summary><b>Model training and versioning</b></summary>
+
+- GradientBoosting classifier with 5-fold cross-validation
+- Timestamp-based model versioning in a local registry
+- Full metadata saved: parameters, metrics, timestamps
+- Production pointer file for deployment tracking
+</details>
+
+<details>
+<summary><b>PSI drift detection</b></summary>
+
+- Population Stability Index computed per numeric feature
+- Thresholds: < 0.10 (stable), 0.10-0.25 (investigate), > 0.25 (retrain)
+- Drift dataset simulates distribution shift in tenure, charges, and contract type
+</details>
+
+<details>
+<summary><b>Champion/challenger deployment</b></summary>
+
+- New model compared against production on a primary metric (ROC AUC)
+- Promotion only if challenger exceeds champion by a configurable threshold (default 0.005)
+- Full audit trail of comparisons logged to JSON
+</details>
+
+---
+
+<div align="center">
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer" width="100%"/>
+
+**[Indra-2004](https://github.com/Indra-2004)**
+</div>
