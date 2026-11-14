@@ -52,3 +52,14 @@ class PipelineConfig:
         self.psi_retrain_threshold = psi_retrain_threshold
 
 
+class PipelineRun:
+    """Orchestrates one full training/evaluation/promotion cycle."""
+
+    def __init__(self, config: Optional[PipelineConfig] = None):
+        self.config = config or PipelineConfig()
+        self.registry = ModelRegistry(self.config.artifacts_dir)
+        self.metrics_logger = MetricsLogger(
+            os.path.join(self.config.metrics_dir, "metrics_log.json")
+        )
+        self.run_log: Dict = {"steps": [], "started_at": datetime.utcnow().isoformat()}
+
