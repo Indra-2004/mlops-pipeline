@@ -145,3 +145,20 @@ def validate_distributions(
     return result
 
 
+def run_all_validations(
+    df: pd.DataFrame, reference: Optional[pd.DataFrame] = None
+) -> ValidationResult:
+    """Run schema, null, and distribution validations."""
+    combined = ValidationResult()
+    for vr in [
+        validate_schema(df),
+        validate_nulls(df),
+        validate_distributions(df, reference),
+    ]:
+        for c in vr.checks:
+            combined.checks.append(c)
+            if not c["passed"]:
+                combined.passed = False
+    return combined
+
+
