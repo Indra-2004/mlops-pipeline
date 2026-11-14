@@ -76,3 +76,22 @@ class PipelineRun:
 
     # -----------------------------------------------------------------------
     # Step 1: Validate data
+    # -----------------------------------------------------------------------
+    def step_validate_data(self) -> pd.DataFrame:
+        t0 = time.time()
+        train_df, test_df = load_training_data(self.config.data_dir)
+        validation = run_all_validations(train_df)
+        duration = time.time() - t0
+
+        if validation.passed:
+            self._log_step("validate_data", "PASSED", validation.summary(), duration)
+        else:
+            self._log_step("validate_data", "WARNING", validation.summary(), duration)
+
+        self.run_log["validation"] = validation.to_dict()
+        self._train_df = train_df
+        self._test_df = test_df
+        return train_df
+
+    # -----------------------------------------------------------------------
+    # Step 2: Engineer features
