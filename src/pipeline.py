@@ -188,3 +188,21 @@ class PipelineRun:
 
     # -----------------------------------------------------------------------
     # Step 6: Promote if better
+    # -----------------------------------------------------------------------
+    def step_promote(self) -> str:
+        t0 = time.time()
+        version = self.registry.save_model(self._trainer, self._metrics)
+
+        if self._comparison.get("promote_challenger", False):
+            self.registry.promote_to_production(version)
+            status_detail = f"version {version} promoted to production"
+        else:
+            status_detail = f"version {version} saved but NOT promoted"
+
+        duration = time.time() - t0
+        self._log_step("promote", "PASSED", status_detail, duration)
+        self.run_log["model_version"] = version
+        return version
+
+    # -----------------------------------------------------------------------
+    # Full run
