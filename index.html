@@ -643,3 +643,28 @@ footer a:hover { color: var(--gold); }
   </div>
 </section>
 
+<!-- Monitoring -->
+<section class="fade-up">
+  <h2>Monitoring</h2>
+  <p class="method-text">
+    The pipeline monitors data quality and model performance continuously. PSI (Population Stability Index) is computed for every numeric feature by comparing the incoming data distribution against the training baseline. Features with PSI above 0.25 trigger a retraining recommendation. The champion/challenger pattern ensures new models are only promoted when they beat the current production model by a configurable margin on ROC AUC. Every run is logged with full metrics for audit.
+  </p>
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Ingest data</div>
+      <div class="pipeline-detail">Validate schema and nulls</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Compute PSI</div>
+      <div class="pipeline-detail">Per-feature drift scores</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-dot"></div>
+      <div class="pipeline-label">Decision</div>
+      <div class="pipeline-detail">Retrain or keep</div>
+    </div>
+  </div>
+</section>
+
