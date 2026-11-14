@@ -31,3 +31,13 @@ from src.model import (
 )
 from src.pipeline import PipelineRun, PipelineConfig
 
+# ---------------------------------------------------------------------------
+# Config
+# ---------------------------------------------------------------------------
+st.set_page_config(page_title="MLOps pipeline dashboard", layout="wide")
+
+DATA_DIR = os.path.join(PROJECT_DIR, "data")
+ARTIFACTS_DIR = os.path.join(PROJECT_DIR, "artifacts")
+METRICS_DIR = os.path.join(PROJECT_DIR, "metrics")
+
+
