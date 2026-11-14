@@ -110,3 +110,29 @@ def _psi_bucket(expected: np.ndarray, actual: np.ndarray, bins: int = 10) -> flo
     return float(psi)
 
 
+def compute_psi(
+    reference: pd.DataFrame,
+    current: pd.DataFrame,
+    columns: Optional[List[str]] = None,
+    bins: int = 10,
+) -> Dict[str, float]:
+    """Return PSI per numeric column.
+
+    PSI thresholds (common rule of thumb):
+        < 0.10  — no significant shift
+        0.10–0.25  — moderate shift, investigate
+        > 0.25  — significant shift, retrain
+    """
+    if columns is None:
+        columns = list(reference.select_dtypes(include="number").columns)
+
+    results = {}
+    for col in columns:
+        if col in reference.columns and col in current.columns:
+            ref_vals = reference[col].dropna().values.astype(float)
+            cur_vals = current[col].dropna().values.astype(float)
+            if len(ref_vals) > 0 and len(cur_vals) > 0:
+                results[col] = _psi_bucket(ref_vals, cur_vals, bins=bins)
+    return results
+
+
