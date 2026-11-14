@@ -668,3 +668,28 @@ footer a:hover { color: var(--gold); }
   </div>
 </section>
 
+<!-- How to run -->
+<section class="fade-up">
+  <h2>How to run</h2>
+  <p class="section-sub">Local, Docker, or CI/CD — pick your deployment path</p>
+  <div class="app-grid">
+    <div class="app-card">
+      <div class="app-card-name">Local</div>
+      <ul>
+        <li>pip install -r requirements.txt</li>
+        <li>python data/generate_data.py</li>
+        <li>python -m src.pipeline</li>
+        <li>streamlit run app.py</li>
+      </ul>
+    </div>
+    <div class="app-card">
+      <div class="app-card-name">Docker</div>
+      <ul>
+        <li>docker build -t mlops-pipeline .</li>
+        <li>docker run -p 8501:8501 mlops-pipeline</li>
+        <li>Visit http://localhost:8501</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
