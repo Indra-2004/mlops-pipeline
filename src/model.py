@@ -316,6 +316,15 @@ def compare_models(
 # ---------------------------------------------------------------------------
 # Metrics logger
 # ---------------------------------------------------------------------------
+def _to_json_safe(obj: Any) -> Any:
+    """Convert numpy scalars/arrays so they can be written as JSON."""
+    if isinstance(obj, np.generic):
+        return obj.item()
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    return str(obj)
+
+
 class MetricsLogger:
     """Append pipeline run metrics to a JSON-lines file."""
 
@@ -326,7 +335,7 @@ class MetricsLogger:
     def log(self, entry: Dict) -> None:
         entry["logged_at"] = datetime.utcnow().isoformat()
         with open(self.log_path, "a") as f:
-            f.write(json.dumps(entry) + "\n")
+            f.write(json.dumps(entry, default=_to_json_safe) + "\n")
 
     def read_all(self) -> List[Dict]:
         entries = []
